@@ -116,3 +116,49 @@ for i in inputs.splitlines():
     
 print(sum_)
 
+#day5.1, 5.2
+import re
+
+current_input = inputs
+
+starting_stack, instructions  = re.split(r"\n\n", current_input)
+
+nbr_stacks = int(starting_stack.splitlines()[-1][-2])
+stack_content = starting_stack.splitlines()[:-1]
+stack_content.reverse()
+
+stacks = [[] for i in range(0,nbr_stacks)]
+
+#1,5,9
+for i in stack_content:
+    row = [i[1+j*4] for j in range(0,nbr_stacks)]
+    
+    for idx,val in enumerate(row):
+        if val != " ":
+            stacks[idx].append(val)
+            
+def move1(times_, from_, to_):
+
+    for i in range(0,times_):
+        elem = stacks[from_].pop()
+        stacks[to_].append(elem)
+        
+def move2(times_, from_, to_):
+    elems = []
+    for i in range(0,times_):
+        elems.append(stacks[from_].pop())
+        
+    elems.reverse()    
+    [stacks[to_].append(i) for i in elems ]
+    
+for i in instructions.splitlines():
+    ans = re.findall(r"move (\d+) from (\d+) to (\d+)", i)
+    ans = [int(i) for i in ans[0]]
+    ans[1]-= 1 #compensate for index 0 in array
+    ans[2]-= 1 #compensate for index 0 in array
+    move2(*ans)
+    
+string = ""
+for i in stacks:
+    string+=i[-1]
+print(string)
