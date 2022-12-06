@@ -162,3 +162,19 @@ string = ""
 for i in stacks:
     string+=i[-1]
 print(string)
+
+#day 6
+buffer = "" 
+index = 0
+for idx,char in enumerate(inputs):
+    pos = buffer.find(char)
+    if pos >= 0:
+        buffer = buffer[pos+1:]
+        buffer += char
+        index = idx
+    else:
+        buffer += char
+        
+    if len(buffer) == 14: #4 for p.1, 14 for p.2
+        break
+print(buffer, idx+1)
