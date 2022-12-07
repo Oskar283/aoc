@@ -180,9 +180,9 @@ for idx,char in enumerate(inputs):
 print(buffer, idx+1)
 
 
-#day 7.1 Ugh I hate this solution
+#day 7. Ugh I hate this solution
 import re
-split = re.split(r"\$ ", test_input)[1:]  #skip first empty
+split = re.split(r"\$ ", inputs)[1:]  #skip first empty
 
 
 class FileNode():
@@ -199,7 +199,8 @@ class DirNode():
         self.parent = parent
         self.name = name
         self.du = 0  #Needs to be calculated
-        
+        self.last_iter = 0
+
     def add_child(self, node):
         self.children.append(node)
 
@@ -256,16 +257,16 @@ def calculateSizes(node):
     if isinstance(node, DirNode):
         if not len(node.children):
             print("Found it", node.name, node.parent)
-        sum_list = [calculateSize(child) for child in node.children]
+        sum_list = [calculateSizes(child) for child in node.children]
         node.du = sum(sum_list)
         if node.du < 100000:
             global tot
             tot+=node.du
     return node.du
 
-calculateSize(baseNode)
-print(tot)
-baseNode.size = tot
+baseNodeSize = calculateSizes(baseNode)
+print(tot, baseNodeSize)
+baseNode.du = baseNodeSize
 
 #day7.2
 dirSizes = []
@@ -278,9 +279,12 @@ def listDirSizes(node): #always dirNodes
 
 listDirSizes(baseNode)
 usedSize = baseNode.du
-neededSize = 30000000
-trimSize = usedSize - neededSize
-filtered = list(filter(lambda x: x>trimSize,dirSizes))
+FS_SIZE = 70000000 
+SPACE_NEEDED = 30000000
+unused = FS_SIZE - usedSize
+size_to_del = SPACE_NEEDED - unused
+filtered = list(filter(lambda x: x>=size_to_del,dirSizes))
 filtered.sort()
-print(filtered)
+print("size_to_del", size_to_del)
+print("filtered",filtered)
 
