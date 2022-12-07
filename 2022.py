@@ -178,3 +178,109 @@ for idx,char in enumerate(inputs):
     if len(buffer) == 14: #4 for p.1, 14 for p.2
         break
 print(buffer, idx+1)
+
+
+#day 7.1 Ugh I hate this solution
+import re
+split = re.split(r"\$ ", test_input)[1:]  #skip first empty
+
+
+class FileNode():
+
+    def __init__(self, du, name):
+        self.du = du
+        self.name = name
+
+
+class DirNode():
+
+    def __init__(self, name, parent):
+        self.children = []
+        self.parent = parent
+        self.name = name
+        self.du = 0  #Needs to be calculated
+        
+    def add_child(self, node):
+        self.children.append(node)
+
+
+baseNode = DirNode("", None)
+
+cwd = ""
+cwNode = baseNode
+print("Starting")
+for i in split:
+    cmd = i.splitlines()[0]
+    out = i.splitlines()[1:]  #empty if cd
+    #print(repr(cmd),out)
+
+    if re.findall("cd.*", cmd):
+        splitted_cmd = cmd.split(" ")
+        arg = splitted_cmd[1]
+
+        #print("Arg:", repr(arg))
+        if arg == "..":
+            #print("from_dir", cwd)
+            pos = cwd.rfind("/")
+            cwd = cwd[:pos]
+            cwNode = cwNode.parent
+            #print(f"moving up to dir {cwd}, new node={cwNode}, name={cwNode.name}")
+        elif arg == "/":
+            cwd = ""
+            cwNode = baseNode
+        else:
+            cwd += f"/{arg}"
+            children_names = [c.name for c in cwNode.children]
+            wanted_child = cwNode.children[children_names.index(cwd)]
+            cwNode = wanted_child
+            #print(f"moving to dir {cwd}")
+
+    if "ls" == cmd:
+        for line in out:
+            splitted_out = line.split(" ")
+            #print(splitted_out)
+            name = splitted_out[1]
+            du = int(
+                splitted_out[0]) if not splitted_out[0] == "dir" else None
+
+            if du:
+                cwNode.add_child(FileNode(int(du), f"{cwd}/{name}"))
+            else:
+                new_node = DirNode(f"{cwd}/{name}", cwNode)
+                #print("New node", new_node.name)
+                cwNode.add_child(new_node)
+
+print("end of parse")
+tot = 0
+def calculateSizes(node):
+    if isinstance(node, DirNode):
+        if not len(node.children):
+            print("Found it", node.name, node.parent)
+        sum_list = [calculateSize(child) for child in node.children]
+        node.du = sum(sum_list)
+        if node.du < 100000:
+            global tot
+            tot+=node.du
+    return node.du
+
+calculateSize(baseNode)
+print(tot)
+baseNode.size = tot
+
+#day7.2
+dirSizes = []
+def listDirSizes(node): #always dirNodes
+    dirNodes = [child for child in node.children if isinstance(child, DirNode)]
+    if dirNodes:
+        global dirSizes
+        dirSizes += [child.du for child in dirNodes]
+        [listDirSizes(child) for child in dirNodes]
+
+listDirSizes(baseNode)
+usedSize = baseNode.du
+neededSize = 30000000
+trimSize = usedSize - neededSize
+filtered = list(filter(lambda x: x>trimSize,dirSizes))
+filtered.sort()
+print(filtered)
+
