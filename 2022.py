@@ -288,3 +288,88 @@ filtered.sort()
 print("size_to_del", size_to_del)
 print("filtered",filtered)
 
+#day8.1
+import numpy as np
+
+trees = []
+for idx, i in enumerate(test_input.splitlines()):
+    js = [*i]
+    js = [int(j) for j in js]
+    trees.append(js)
+
+trees = np.array(trees)
+seen = np.zeros(trees.shape)
+
+def calc_trees(trees, seen):
+    for idx, i in enumerate(trees):
+        max_height_of_tree = -1
+        #look from left
+        for jdx in range(len(i)):
+            if i[jdx] > max_height_of_tree:
+                max_height_of_tree = i[jdx] #new max height on tree
+                seen[idx,jdx] += 1
+    
+        #look from right
+        max_height_of_tree = -1
+        for jdx in range(len(i)-1, 0, -1):
+            if i[jdx] > max_height_of_tree:
+                max_height_of_tree = i[jdx] #new max height on tree
+                seen[idx,jdx] +=1
+
+calc_trees(trees, seen)
+#Transpose to repeat above
+trees = trees.T
+seen = seen
+calc_trees(trees, seen)
+            
+#return to original
+trees = trees.T
+seen = seen.T
+seen_1d = np.reshape(seen,-1)
+#print(len(seen_1d[seen_1d>0]))
+
+#day8.2 NOT FINISHEDS
+def look_up(ix, iy, tree_matrix):
+    treehouse_height = tree_matrix[ix,iy]
+    nbr = 0
+
+    if ix == 0:
+        return 0
+
+    for idx in range(ix-1, -1, -1):
+        next_tree = tree_matrix[idx, iy]
+        nbr+=1
+        if next_tree >= treehouse_height:
+            break
+
+    return nbr
+
+def look_down(ix, iy, tree_matrix):
+    treehouse_height = tree_matrix[ix,iy]
+    nbr = 0
+
+    nbr_trees_tot = tree_matrix.shape[0]
+    if ix == nbr_trees_tot:
+        return 0
+
+    print(ix)
+    for index in range(ix, nbr_trees_tot+1, 1):
+        print(ix, index, nbr_trees_tot)
+        next_tree = tree_matrix[index, iy]
+        nbr+=1
+        if next_tree >= treehouse_height:
+            break
+
+    return nbr
+
+loc = np.zeros(seen.shape)
+test_tree = np.zeros(seen.shape)
+test_tree[0,0] = 1
+test_tree[3,0] = 2
+
+for iy, ix in np.ndindex(test_tree.shape):
+    loc[ix,iy] = look_up(ix,iy, test_tree)
+    loc[ix,iy] = look_down(ix,iy, test_tree)
+
+print(test_tree)
+print(loc)
