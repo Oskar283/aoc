@@ -373,3 +373,96 @@ for iy, ix in np.ndindex(test_tree.shape):
 
 print(test_tree)
 print(loc)
+
+#day14
+import numpy as np
+with open(inputs) as fh:
+    inputs = fh.read().splitlines()
+
+parsed_coords = []
+max_row = -1
+
+for line in inputs:
+    coords = line.split(" -> ")
+    parsed_coords.append([]) #prepare for next coord list
+    for coord in coords:
+        col,row = coord.split(",")
+        parsed_coords[-1].append((int(row),int(col)))
+
+        #find max y
+        if int(row) > max_row:
+            max_row = int(row)
+
+print(parsed_coords)
+playarea = np.zeros((900,1000))
+
+# 0 open
+# 1 rock
+# 2 sand
+
+# occupy rocks
+for line in parsed_coords:
+    last_pos = line[0]
+    for row,col in line[1:]:
+        if col == last_pos[1]: # move vertical
+            if last_pos[0] < row:
+                points = np.arange(last_pos[0], row+1, 1)
+            else:
+                points = np.arange(row, last_pos[0]+1)
+
+            # fill
+            for p in points:
+                playarea[p,col] = 1
+
+        else: #move horz
+            if last_pos[1] < col:
+                points = np.arange(last_pos[1], col+1)
+            else:
+                points = np.arange(col, last_pos[1]+1)
+
+            # fill
+            for p in points:
+                playarea[row,p] = 1
+
+        last_pos = (row,col)
+
+def print_playarea():
+    global playarea
+    print(playarea[0:10, 494:505])
+
+print_playarea()
+
+def drop_sand(sand_pos_row, sand_pos_col, playarea):
+    if not playarea[sand_pos_row+1, sand_pos_col] > 0:
+        drop_sand(sand_pos_row+1, sand_pos_col, playarea)
+    elif not playarea[sand_pos_row+1, sand_pos_col-1] > 0:
+        drop_sand(sand_pos_row+1, sand_pos_col-1, playarea)
+    elif not playarea[sand_pos_row+1, sand_pos_col+1] > 0:
+        drop_sand(sand_pos_row+1, sand_pos_col+1, playarea)
+    else:
+        playarea[sand_pos_row, sand_pos_col] = 2
+        return None
+def part1():
+    try: #try until outside of area
+        while(True):
+            drop_sand(0, 500, playarea)
+
+    except Exception as e:
+        print(e)
+        print("Done!")
+
+    print_playarea()
+    print(len(playarea[playarea == 2]))
+#part1()
+
+#part2
+playarea[max_row + 2,:] = 1
+print(playarea[max_row + 2,:])
+def part2():
+    while(playarea[0, 500] != 2):
+        drop_sand(0, 500, playarea)
+
+
+    print(len(playarea[playarea ==2]))
+
+part2()
